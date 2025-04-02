@@ -46,6 +46,33 @@ class JS8CallAPI:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(5)
         self._gps_connected = False
+        self._closed = False
+        self._message_handlers = {
+            'CLOSE': self._handle_close,
+            'RX.DIRECTED': self._handle_directed,
+            'RX.SPOT': self._handle_spot,
+            'TX.FRAME': self._handle_tx_frame
+        }
+
+    def _handle_close(self, message: Dict[str, Any]) -> None:
+        """Handle CLOSE message from JS8Call."""
+        self._closed = True
+        logger.info("JS8Call closed")
+
+    def _handle_directed(self, message: Dict[str, Any]) -> None:
+        """Handle RX.DIRECTED message from JS8Call."""
+        params = message.get('params', {})
+        logger.info(f"Directed message from {params.get('FROM')}: {params.get('TEXT')}")
+
+    def _handle_spot(self, message: Dict[str, Any]) -> None:
+        """Handle RX.SPOT message from JS8Call."""
+        params = message.get('params', {})
+        logger.info(f"Spot: {params.get('CALL')} at {params.get('FREQ')} Hz")
+
+    def _handle_tx_frame(self, message: Dict[str, Any]) -> None:
+        """Handle TX.FRAME message from JS8Call."""
+        params = message.get('params', {})
+        logger.info(f"TX Frame: {params.get('TEXT')}")
 
     def connect(self) -> None:
         """
@@ -161,6 +188,11 @@ class JS8CallAPI:
                     try:
                         response = json.loads(msg.decode())
                         logger.debug(f"Received: {msg.decode()}")
+                        
+                        # Handle special messages
+                        msg_type = response.get('type')
+                        if msg_type in self._message_handlers:
+                            self._message_handlers[msg_type](response)
                         
                         # Check if this is the response we're waiting for
                         response_id = response.get('params', {}).get('_ID')
@@ -516,9 +548,96 @@ class JS8CallAPI:
             logger.error(f"Ping failed: {e}")
             return False
         
+    def get_ptt_status(self) -> bool:
+        """
+        Get the current PTT status.
+        
+        Returns:
+            bool: True if PTT is active, False otherwise
+        """
+        response = self.send_message("RIG.GET_PTT")
+        return response.get('params', {}).get('PTT', False)
+
     def close(self) -> None:
         """Close the socket connection to JS8Call."""
         try:
             self.sock.close()
         except:
-            pass 
+            pass
+
+    def is_closed(self) -> bool:
+        """
+        Check if JS8Call has been closed.
+        
+        Returns:
+            bool: True if JS8Call has been closed, False otherwise
+        """
+        return self._closed
+
+    def get_directed_message(self) -> Optional[Dict[str, Any]]:
+        """
+        Get the last directed message received.
+        
+        Returns:
+            Optional[Dict[str, Any]]: The directed message details or None if no message:
+                {
+                    'FROM': str,      # Sender callsign
+                    'TO': str,        # Recipient callsign
+                    'TEXT': str,      # Message text
+                    'UTC': int        # UTC timestamp in milliseconds
+                }
+        """
+        response = self.send_message("RX.GET_DIRECTED")
+        params = response.get('params', {})
+        if not params:
+            return None
+        return {
+            'FROM': params.get('FROM', ''),
+            'TO': params.get('TO', ''),
+            'TEXT': params.get('TEXT', ''),
+            'UTC': params.get('UTC', 0)
+        }
+
+    def get_spot(self) -> Optional[Dict[str, Any]]:
+        """
+        Get the last spot received.
+        
+        Returns:
+            Optional[Dict[str, Any]]: The spot details or None if no spot:
+                {
+                    'CALL': str,      # Station callsign
+                    'FREQ': int,      # Frequency in Hz
+                    'SNR': int,       # Signal-to-noise ratio
+                    'UTC': int        # UTC timestamp in milliseconds
+                }
+        """
+        response = self.send_message("RX.GET_SPOT")
+        params = response.get('params', {})
+        if not params:
+            return None
+        return {
+            'CALL': params.get('CALL', ''),
+            'FREQ': params.get('FREQ', 0),
+            'SNR': params.get('SNR', 0),
+            'UTC': params.get('UTC', 0)
+        }
+
+    def get_tx_frame(self) -> Optional[Dict[str, Any]]:
+        """
+        Get the last TX frame sent.
+        
+        Returns:
+            Optional[Dict[str, Any]]: The TX frame details or None if no frame:
+                {
+                    'TEXT': str,      # Frame text
+                    'UTC': int        # UTC timestamp in milliseconds
+                }
+        """
+        response = self.send_message("TX.GET_FRAME")
+        params = response.get('params', {})
+        if not params:
+            return None
+        return {
+            'TEXT': params.get('TEXT', ''),
+            'UTC': params.get('UTC', 0)
+        } 

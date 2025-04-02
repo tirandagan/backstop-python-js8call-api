@@ -213,10 +213,45 @@ The following table provides a complete overview of all available API methods:
       <td><code>bool</code></td>
       <td>Check if JS8Call is responsive</td>
     </tr>
+    <tr>
+      <td>PTT Status</td>
+      <td>✅ <code>get_ptt_status()</code></td>
+      <td>❌</td>
+      <td><code>bool</code></td>
+      <td>Get current PTT status</td>
+    </tr>
+    <tr>
+      <td>Directed Message</td>
+      <td>✅ <code>get_directed_message()</code></td>
+      <td>❌</td>
+      <td><code>Optional[Dict[str, Any]]</code></td>
+      <td>Get last directed message received</td>
+    </tr>
+    <tr>
+      <td>Spot</td>
+      <td>✅ <code>get_spot()</code></td>
+      <td>❌</td>
+      <td><code>Optional[Dict[str, Any]]</code></td>
+      <td>Get last spot received</td>
+    </tr>
+    <tr>
+      <td>TX Frame</td>
+      <td>✅ <code>get_tx_frame()</code></td>
+      <td>❌</td>
+      <td><code>Optional[Dict[str, Any]]</code></td>
+      <td>Get last TX frame sent</td>
+    </tr>
+    <tr>
+      <td>Connection Status</td>
+      <td>✅ <code>is_closed()</code></td>
+      <td>❌</td>
+      <td><code>bool</code></td>
+      <td>Check if JS8Call connection is closed</td>
+    </tr>
   </tbody>
 </table>
 
----
+
 
 ## Installation
 
@@ -236,6 +271,8 @@ pip install backstop-python-js8call-api
 ```
 
 ### Development Install
+
+If you want to contribute or modify the code:
 
 1. Clone this repository:
 ```bash
@@ -799,6 +836,32 @@ Gets the current grid square from GPS coordinates.
 **Returns:**
 - `str`: The Maidenhead grid square calculated from current GPS position
 - `None`: If GPS error or no fix
+
+### New Methods
+
+#### get_directed_message()
+Gets the last directed message received.
+
+**Returns:**
+- `Optional[Dict[str, Any]]`: The last directed message received
+
+#### get_spot()
+Gets the last spot received.
+
+**Returns:**
+- `Optional[Dict[str, Any]]`: The last spot received
+
+#### get_tx_frame()
+Gets the last TX frame sent.
+
+**Returns:**
+- `Optional[Dict[str, Any]]`: The last TX frame sent
+
+#### is_closed()
+Checks if the JS8Call connection has been closed.
+
+**Returns:**
+- `bool`: True if JS8Call has been closed, False otherwise
 
 ---
 
