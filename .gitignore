@@ -9,3 +9,4 @@ setup.py
 js8call-source-code/
 dist/
 __pycache__
+backstop_python_js8call_api.egg-info
