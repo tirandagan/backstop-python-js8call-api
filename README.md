@@ -763,172 +763,170 @@ finally:
 
 ### JS8CallAPI Class
 
-A direct implementation that ensures correct message formatting for the JS8Call API and proper parsing of responses.
+The main class for interacting with JS8Call's TCP API. This class handles all message formatting and response parsing.
 
-### Class Constants
+#### Constants
 
-```python
-from JS8CallAPI import JS8_NORMAL, JS8_FAST, JS8_TURBO, JS8_SLOW, JS8_ULTRA
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `JS8_NORMAL` | 0 | Normal speed mode (JS8) |
+| `JS8_FAST` | 1 | Fast speed mode (JS8Fast) |
+| `JS8_TURBO` | 2 | Turbo speed mode (JS8Turbo) |
+| `JS8_SLOW` | 3 | Slow speed mode (JS8Slow) |
+| `JS8_ULTRA` | 4 | Ultra slow mode (JS8Ultra) |
 
-JS8_NORMAL  # Normal speed mode (JS8)
-JS8_FAST    # Fast speed mode (JS8Fast)
-JS8_TURBO   # Turbo speed mode (JS8Turbo)
-JS8_SLOW    # Slow speed mode (JS8Slow)
-JS8_ULTRA   # Ultra slow mode (JS8Ultra)
-```
-
-### Constructor
+#### Constructor
 
 ```python
 JS8CallAPI(host='127.0.0.1', port=2442)
 ```
 
 **Parameters:**
-- `host` (str): The hostname or IP address of the JS8Call server (default: '127.0.0.1')
-- `port` (int): The TCP port number for the JS8Call API (default: 2442)
+- `host` (str): JS8Call server hostname/IP (default: '127.0.0.1')
+- `port` (int): TCP port for JS8Call API (default: 2442)
 
 ### Connection Methods
 
-#### connect()
-Establishes a connection to the JS8Call server.
+#### `connect()`
+Establishes connection to JS8Call server.
 
 **Returns:** None
 
 **Raises:**
-- ConnectionRefusedError: If JS8Call is not running or API not enabled
-- Exception: For other connection errors
+- `ConnectionRefusedError`: If JS8Call is not running or API not enabled
+- `Exception`: For other connection errors
 
-#### connect_gps()
-Connects to the GPS daemon (gpsd).
+#### `connect_gps()`
+Connects to GPS daemon (gpsd).
 
 **Returns:** None
 
 **Raises:**
-- Exception: If connection to gpsd fails
+- `Exception`: If connection to gpsd fails
 
-#### close()
-Closes the socket connection to JS8Call.
+#### `close()`
+Closes socket connection to JS8Call.
 
 **Returns:** None
 
-#### ping()
-Sends a ping message to check if JS8Call is responsive.
+#### `ping()`
+Checks if JS8Call is responsive.
 
 **Returns:**
 - `bool`: True if JS8Call responds, False otherwise
 
 ### Frequency Methods
 
-#### get_frequency()
-Gets the current frequency information from JS8Call.
+#### `get_frequency()`
+Gets current frequency information.
 
 **Returns:**
 ```python
 {
-    'freq': int,    # Actual operating frequency in Hz
+    'freq': int,    # Operating frequency in Hz
     'dial': int,    # Dial frequency in Hz
     'offset': int   # Frequency offset in Hz
 }
 ```
 
-#### set_frequency(dial_freq=None, offset=None)
-Sets the current frequency.
+#### `set_frequency(dial_freq=None, offset=None)`
+Sets current frequency.
 
 **Parameters:**
-- `dial_freq` (int, optional): The dial frequency in Hz
-- `offset` (int, optional): The frequency offset in Hz
+- `dial_freq` (int, optional): Dial frequency in Hz
+- `offset` (int, optional): Frequency offset in Hz
 
 **Returns:**
-- `bool`: True if the command was sent successfully
+- `bool`: True if command sent successfully
 
 ### Station Information Methods
 
-#### get_callsign()
-Gets the current station callsign.
+#### `get_callsign()`
+Gets current station callsign.
 
 **Returns:**
-- `str`: The current station callsign
+- `str`: Current station callsign
 
-#### get_grid()
-Gets the current grid locator.
+#### `get_grid()`
+Gets current grid locator.
 
 **Returns:**
-- `str`: The current Maidenhead grid locator
+- `str`: Current Maidenhead grid locator
 
-#### set_grid(grid)
-Sets the current grid locator.
+#### `set_grid(grid)`
+Sets current grid locator.
 
 **Parameters:**
-- `grid` (str): The Maidenhead grid locator to set
+- `grid` (str): Maidenhead grid locator to set
 
 **Returns:**
 - `bool`: True if successful
 
-#### get_station_info()
-Gets the station information text.
+#### `get_station_info()`
+Gets station information text.
 
 **Returns:**
-- `str`: The station information text
+- `str`: Station information text
 
-#### set_station_info(info)
-Sets the station information text.
+#### `set_station_info(info)`
+Sets station information text.
 
 **Parameters:**
-- `info` (str): The station information text to set
+- `info` (str): Station information text to set
 
 **Returns:**
 - `bool`: True if successful
 
-#### get_status()
-Gets the current station status text.
+#### `get_status()`
+Gets current station status text.
 
 **Returns:**
-- `str`: The current status message
+- `str`: Current status message
 
-#### set_status(status)
-Sets the current station status text.
+#### `set_status(status)`
+Sets current station status text.
 
 **Parameters:**
-- `status` (str): The status text to set
+- `status` (str): Status text to set
 
 **Returns:**
 - `bool`: True if successful
 
 ### Messaging Methods
 
-#### get_rx_text()
-Gets the text from the receive window.
+#### `get_rx_text()`
+Gets text from receive window.
 
 **Returns:**
-- `str`: The received text (up to 1024 characters)
+- `str`: Received text (up to 1024 characters)
 
-#### get_tx_text()
-Gets the text from the transmit buffer.
+#### `get_tx_text()`
+Gets text from transmit buffer.
 
 **Returns:**
-- `str`: The text in the transmit buffer
+- `str`: Text in transmit buffer
 
-#### set_tx_text(text)
-Sets the text in the transmit buffer.
+#### `set_tx_text(text)`
+Sets text in transmit buffer.
 
 **Parameters:**
-- `text` (str): The text to set in the transmit buffer
+- `text` (str): Text to set in transmit buffer
 
 **Returns:**
 - `bool`: True if successful
 
-#### send_message_text(text)
+#### `send_message_text(text)`
 Sends a message immediately.
 
 **Parameters:**
-- `text` (str): The message text to send
+- `text` (str): Message text to send
 
 **Returns:**
-- `bool`: True if the command was sent successfully
+- `bool`: True if command sent successfully
 
 ### Activity Monitoring Methods
 
-#### get_call_activity()
+#### `get_call_activity()`
 Gets information about recently heard stations.
 
 **Returns:**
@@ -941,18 +939,17 @@ Gets information about recently heard stations.
     },
     'CALLSIGN2': {
         # Same structure...
-    },
-    # More callsigns...
+    }
 }
 ```
 
-#### get_selected_call()
-Gets the currently selected callsign in the UI.
+#### `get_selected_call()`
+Gets currently selected callsign in UI.
 
 **Returns:**
-- `str`: The selected callsign or empty string if none selected
+- `str`: Selected callsign or empty string if none selected
 
-#### get_band_activity()
+#### `get_band_activity()`
 Gets activity across the band.
 
 **Returns:**
@@ -968,31 +965,30 @@ Gets activity across the band.
     },
     'OFFSET2': {
         # Same structure...
-    },
-    # More offsets...
+    }
 }
 ```
 
 ### Mode Control Methods
 
-#### get_speed()
-Gets the current JS8Call speed setting.
+#### `get_speed()`
+Gets current JS8Call speed setting.
 
 **Returns:**
-- `int`: The current speed mode (use class constants to interpret)
+- `int`: Current speed mode (use class constants to interpret)
 
-#### set_speed(speed)
-Sets the JS8Call speed mode.
+#### `set_speed(speed)`
+Sets JS8Call speed mode.
 
 **Parameters:**
-- `speed` (int): The speed mode (use class constants, e.g., JS8_NORMAL)
+- `speed` (int): Speed mode (use class constants, e.g., JS8_NORMAL)
 
 **Returns:**
 - `bool`: True if successful
 
 ### Inbox Methods
 
-#### get_inbox_messages(callsign=None)
+#### `get_inbox_messages(callsign=None)`
 Gets messages from the inbox.
 
 **Parameters:**
@@ -1010,12 +1006,11 @@ Gets messages from the inbox.
             'TEXT': str,   # Message text
             'UTC': int     # UTC timestamp in milliseconds
         }
-    },
-    # More messages...
+    }
 ]
 ```
 
-#### store_message(callsign, text)
+#### `store_message(callsign, text)`
 Stores a message in the inbox.
 
 **Parameters:**
@@ -1035,43 +1030,43 @@ Stores a message in the inbox.
 
 ### UI Control Methods
 
-#### raise_window()
-Raises the JS8Call window to the foreground.
+#### `raise_window()`
+Raises JS8Call window to foreground.
 
 **Returns:**
-- `bool`: True if the command was sent successfully
+- `bool`: True if command sent successfully
 
 ### GPS Methods
 
-#### get_gps_grid_square()
-Gets the current grid square from GPS coordinates.
+#### `get_gps_grid_square()`
+Gets current grid square from GPS coordinates.
 
 **Returns:**
-- `str`: The Maidenhead grid square calculated from current GPS position
+- `str`: Maidenhead grid square calculated from current GPS position
 - `None`: If GPS error or no fix
 
-### New Methods
+### Additional Methods
 
-#### get_directed_message()
-Gets the last directed message received.
-
-**Returns:**
-- `Optional[Dict[str, Any]]`: The last directed message received
-
-#### get_spot()
-Gets the last spot received.
+#### `get_directed_message()`
+Gets last directed message received.
 
 **Returns:**
-- `Optional[Dict[str, Any]]`: The last spot received
+- `Optional[Dict[str, Any]]`: Last directed message received
 
-#### get_tx_frame()
-Gets the last TX frame sent.
+#### `get_spot()`
+Gets last spot received.
 
 **Returns:**
-- `Optional[Dict[str, Any]]`: The last TX frame sent
+- `Optional[Dict[str, Any]]`: Last spot received
 
-#### is_closed()
-Checks if the JS8Call connection has been closed.
+#### `get_tx_frame()`
+Gets last TX frame sent.
+
+**Returns:**
+- `Optional[Dict[str, Any]]`: Last TX frame sent
+
+#### `is_closed()`
+Checks if JS8Call connection has been closed.
 
 **Returns:**
 - `bool`: True if JS8Call has been closed, False otherwise
