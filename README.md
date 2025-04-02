@@ -22,6 +22,7 @@
 - [API Features Summary](#api-features-summary)
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
+- [Provided Examples](#provided-examples)
 - [Advanced Examples](#advanced-examples)
   - [Using the Direct Implementation](#using-the-direct-implementation)
   - [Messaging Operations](#messaging-operations)
@@ -340,7 +341,219 @@ This will launch a menu-driven interface allowing you to:
 - Control JS8Call modes and speeds
 - Integrate with GPS for grid square updates
 
----
+## Provided Examples
+
+The package includes several example scripts in the `examples` directory demonstrating different use cases:
+
+### 1. Basic Connection (`01_basic_connection.py`)
+Demonstrates the fundamental connection to JS8Call and retrieving basic information like frequency. This example shows how to:
+- Establish a connection to JS8Call
+- Retrieve current frequency information
+- Safely close the connection
+
+Example output:
+```
+Connected to JS8Call
+Current frequency: 14,078,000 Hz
+Dial frequency: 14,077,000 Hz
+Offset: 1,000 Hz
+Connection closed
+```
+
+### 2. Message Sending (`02_send_message.py`)
+Shows how to send messages to other stations using the API. This example demonstrates:
+- Connecting to JS8Call
+- Sending a message to a specific callsign
+- Verifying message transmission
+
+Example output:
+```
+Connected to JS8Call
+Sending message to W1AW: "Hello from JS8Call API!"
+Message sent successfully
+Connection closed
+```
+
+### 3. Frequency Control (`03_change_frequencies.py`)
+Illustrates how to change and monitor JS8Call frequencies. This example shows:
+- Reading current frequency
+- Changing to a new frequency (20m band)
+- Verifying the frequency change
+- Returning to original frequency
+
+Example output:
+```
+Connected to JS8Call
+Current frequency: 7,040,000 Hz
+Changing to 20m band (14,078,000 Hz)
+New frequency: 14,078,000 Hz
+Returning to original frequency
+Connection closed
+```
+
+### 4. Message Monitoring (`04_monitor_messages.py`)
+Demonstrates real-time monitoring of incoming messages. This example shows:
+- Continuous monitoring of the receive window
+- Displaying message details (sender, recipient, text)
+- Graceful handling of connection closure
+
+Example output:
+```
+Connected to JS8Call
+Monitoring messages (Press Ctrl+C to stop)...
+
+[14:30:15] From: W1AW To: ALL Text: CQ CQ CQ
+[14:30:45] From: K1ABC To: W1AW Text: Hello W1AW
+[14:31:00] From: N1XYZ To: ALL Text: QSY 20m
+Connection closed
+```
+
+### 5. Station Information (`05_get_station_info.py`)
+Shows how to retrieve and display station information. This example demonstrates:
+- Getting station details
+- Displaying callsign and grid square
+- Handling missing information
+
+Example output:
+```
+Connected to JS8Call
+Station Information:
+Callsign: W1AW
+Grid Square: FN31
+Status: Active
+Connection closed
+```
+
+### 6. Mode Control (`06_get_mode_info.py`)
+Demonstrates how to check and control JS8Call operating modes. This example shows:
+- Reading current mode
+- Changing mode settings
+- Verifying mode changes
+
+Example output:
+```
+Connected to JS8Call
+Current mode: JS8
+Changing to JS8Fast mode
+Mode changed successfully
+Connection closed
+```
+
+### 7. Signal Quality (`07_get_snr.py`)
+Shows how to monitor signal-to-noise ratio. This example demonstrates:
+- Reading current SNR
+- Monitoring SNR changes
+- Displaying signal quality information
+
+Example output:
+```
+Connected to JS8Call
+Current SNR: 12 dB
+Signal Quality: Good
+Monitoring SNR for 60 seconds...
+SNR fluctuated between 8-15 dB
+Connection closed
+```
+
+### 8. Speed Control (`08_get_speed.py`)
+Illustrates how to control JS8Call's speed settings. This example shows:
+- Reading current speed
+- Changing speed modes
+- Verifying speed changes
+
+Example output:
+```
+Connected to JS8Call
+Current speed: Normal
+Changing to Turbo mode
+Speed changed successfully
+Connection closed
+```
+
+### 9. Callsign Operations (`09_get_callsign.py`)
+Demonstrates how to work with station callsigns. This example shows:
+- Reading current callsign
+- Validating callsign format
+- Displaying station identification
+
+Example output:
+```
+Connected to JS8Call
+Current callsign: W1AW
+Callsign format: Valid
+Station identification complete
+Connection closed
+```
+
+### 10. Grid Square Operations (`10_get_grid.py`)
+Shows how to handle Maidenhead grid square operations. This example demonstrates:
+- Reading current grid square
+- Validating grid square format
+- Updating grid square from GPS (if available)
+
+Example output:
+```
+Connected to JS8Call
+Current grid square: FN31
+Grid square format: Valid
+GPS grid square: FN31pr
+Grid square updated successfully
+Connection closed
+```
+
+### 11. Band Predictor (`11_band_predictor.py`)
+A comprehensive example that demonstrates how to use the JS8Call API along with GPS, weather, and solar data to recommend the optimal band for operation. This example includes:
+
+- GPS integration for location and time
+- Weather data fetching from OpenWeatherMap API
+- Solar conditions from HamQSL API
+- Smart band prediction based on:
+  - Time of day
+  - Location (latitude)
+  - Temperature and weather conditions
+  - Solar flux and K-index
+  - Maximum Usable Frequency (MUF)
+- Automatic JS8Call frequency switching
+- Detailed explanation of recommendation rationale
+
+To use this example, you'll need:
+1. A GPS device connected to your system
+2. An OpenWeatherMap API key (set as OPENWEATHERMAP_API_KEY in .env)
+3. Internet connectivity for weather and solar data
+4. JS8Call running and configured for API access
+
+The script will:
+1. Get your location from GPS
+2. Fetch current weather and solar conditions
+3. Analyze conditions to recommend the best band
+4. Explain the rationale behind the recommendation
+5. Offer to automatically switch JS8Call to the recommended frequency
+
+Example output:
+```
+Location: 40.9000°N, -74.3000°E
+Time: 14:30 America/New_York
+
+Solar Conditions:
+Solar Flux: 125
+K-index: 2
+Maximum Usable Frequency: 15.2 MHz
+
+What this means:
+• Moderate solar activity - Fair conditions for long-distance communication
+• Quiet geomagnetic field - Good conditions for HF propagation
+• Maximum usable frequency of 15.2 MHz suggests limited high-band propagation
+
+Recommended: 20m (14.078 MHz)
+
+Recommendation rationale:
+• Current temperature: 78°F
+• Weather conditions: partly cloudy
+• Mid-day conditions typically support higher frequency bands
+• Early morning/late afternoon conditions favor mid-range frequencies
+
+Would you like to switch JS8Call to this band? (y/n):
+```
 
 ## Advanced Examples
 
