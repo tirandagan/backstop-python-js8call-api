@@ -8,3 +8,4 @@ setup.py
 # Other non-backstop related folders
 js8call-source-code/
 dist/
+__pycache__
