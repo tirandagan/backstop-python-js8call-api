@@ -2,8 +2,8 @@
 
 # env files
 .env*
-
 venv
 
 # Other non-backstop related folders
 js8call-source-code/
+dist/
