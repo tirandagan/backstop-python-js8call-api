@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="backstop-python-js8call-api",
-    version="0.1.0",
+    version="0.1.1",
     author="Tiran Dagan",
     author_email="tiran@backstopbeta.com",
     description="A Python library for interacting with JS8Call's TCP API, featuring GPS integration and automated grid square management.",

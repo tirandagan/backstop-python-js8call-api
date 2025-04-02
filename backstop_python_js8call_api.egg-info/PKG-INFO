@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: backstop-python-js8call-api
-Version: 0.1.0
+Version: 0.1.1
 Summary: A Python library for interacting with JS8Call's TCP API, featuring GPS integration and automated grid square management.
 Home-page: https://github.com/tirandagan/backstop-python-js8call-api
 Author: Tiran Dagan
@@ -260,20 +260,26 @@ The following table provides a complete overview of all available API methods:
 - Network connectivity to the JS8Call server
 - gpsd (for GPS functionality)
 
-### Setup
+### Quick Install
+
+Install directly from PyPI:
+
+```bash
+pip install backstop-python-js8call-api
+```
+
+### Development Install
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/tirandagan/js8call-api.git
-cd js8call-api
+git clone https://github.com/tirandagan/backstop-python-js8call-api.git
+cd backstop-python-js8call-api
 ```
 
-2. Install dependencies:
+2. Install in development mode:
 ```bash
-pip install gpsd-py3
+pip install -e .
 ```
-
-3. The package is ready to use.
 
 ### File Structure
 
