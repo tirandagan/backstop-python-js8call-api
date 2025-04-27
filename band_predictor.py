@@ -83,6 +83,9 @@ def fetch_hamqsl_conditions() -> Optional[Tuple[Optional[float], Optional[int], 
 
 def predict_band_with_solar_data(muf: Optional[float], utc_hour: int, solarflux: Optional[float], kindex: Optional[int]) -> str:
     """Predict band based on solar conditions."""
+    # Convert UTC hour to local hour (assuming EST/EDT for now)
+    local_hour = (utc_hour - 5) % 24  # UTC-5 for EST
+    
     # If we have MUF, use it
     if muf is not None and kindex is not None:
         adjusted_muf = muf * (1 - (kindex * 0.1))
@@ -98,31 +101,33 @@ def predict_band_with_solar_data(muf: Optional[float], utc_hour: int, solarflux:
         elif adjusted_muf >= 7:
             return "40m"
         else:
-            return "80m" if utc_hour >= 18 or utc_hour <= 6 else "40m"
+            return "80m" if local_hour >= 18 or local_hour <= 6 else "40m"
     
     # If we don't have MUF but have solar flux and K-index, use them for prediction
     if solarflux is not None and kindex is not None:
         if solarflux > 150 and kindex <= 2:
-            return "15m" if 10 <= utc_hour <= 16 else "20m"
+            return "15m" if 10 <= local_hour <= 16 else "20m"
         elif solarflux > 100 and kindex <= 3:
-            return "20m" if 10 <= utc_hour <= 16 else "30m"
+            return "20m" if 10 <= local_hour <= 16 else "30m"
         elif solarflux > 80 and kindex <= 4:
-            return "30m" if 10 <= utc_hour <= 16 else "40m"
+            return "30m" if 10 <= local_hour <= 16 else "40m"
         else:
-            return "40m" if 10 <= utc_hour <= 16 else "80m"
+            return "40m" if 10 <= local_hour <= 16 else "80m"
     
     return None
 
 def predict_band(utc_hour: int, latitude: float, temperature: float = None, weather: str = None) -> str:
     """Simple model that uses time of day, latitude, and optional environmental factors."""
-    day = 7 <= utc_hour <= 18
+    # Convert UTC hour to local hour (assuming EST/EDT for now)
+    local_hour = (utc_hour - 5) % 24  # UTC-5 for EST
+    day = 7 <= local_hour <= 18
     high_lat = abs(latitude) > 45
 
     if not day:
         if high_lat:
             return "80m"
         return "40m"
-    elif 10 <= utc_hour <= 16:
+    elif 10 <= local_hour <= 16:
         if temperature and temperature > 85 and weather == "sunny":
             return "10m"
         return "20m"
@@ -139,22 +144,60 @@ def get_timezone_name(lat: float, lon: float) -> str:
 def get_gps_data() -> tuple[float, float, datetime]:
     """Fetch latitude, longitude, and time from GPSD."""
     try:
-        gpsd.connect()
-        packet = gpsd.get_current()
-        if packet.mode < 2:
-            raise RuntimeError("No GPS fix available")
-        
+        # Try to connect to gpsd with a timeout
         try:
-            if isinstance(packet.time, str):
-                gps_time = datetime.fromisoformat(packet.time.replace('Z', '+00:00'))
-            else:
-                gps_time = datetime.fromtimestamp(float(packet.time), tz=pytz.UTC)
-        except (ValueError, TypeError):
-            gps_time = datetime.now(pytz.UTC)
+            gpsd.connect(host='127.0.0.1', port=2947, timeout=5)
+        except Exception as e:
+            print("Warning: Could not connect to gpsd. Please check if:")
+            print("1. gpsd service is running (sudo systemctl status gpsd)")
+            print("2. GPS device is connected and has proper permissions")
+            print("3. GPS device is providing valid data")
+            raise RuntimeError(f"GPS Connection Error: {e}")
+
+        try:
+            packet = gpsd.get_current()
+            if packet.mode < 2:
+                print("Warning: No GPS fix available. Please check if:")
+                print("1. GPS antenna is properly connected")
+                print("2. You have a clear view of the sky")
+                print("3. GPS device is properly configured")
+                raise RuntimeError("No GPS fix available")
             
-        return packet.lat, packet.lon, gps_time
+            try:
+                if isinstance(packet.time, str):
+                    # Parse ISO format time string and ensure it's UTC
+                    gps_time = datetime.fromisoformat(packet.time.replace('Z', '+00:00'))
+                    if gps_time.tzinfo is None:
+                        gps_time = gps_time.replace(tzinfo=pytz.UTC)
+                else:
+                    # Convert timestamp to UTC datetime
+                    gps_time = datetime.fromtimestamp(float(packet.time), tz=pytz.UTC)
+                
+                # Validate GPS time against system time
+                system_time = datetime.now(pytz.UTC)
+                time_diff = abs((gps_time - system_time).total_seconds())
+                
+                # If GPS time is more than 5 minutes off, use system time
+                if time_diff > 300:  # 5 minutes in seconds
+                    print("Warning: GPS time appears incorrect, using system time")
+                    gps_time = system_time
+                    
+            except (ValueError, TypeError) as e:
+                print(f"Warning: Error parsing GPS time: {e}")
+                print("Using system time instead")
+                gps_time = datetime.now(pytz.UTC)
+                
+            return packet.lat, packet.lon, gps_time
+            
+        except Exception as e:
+            print(f"Warning: Error getting GPS data: {e}")
+            print("Using default location and system time")
+            return 40.9, -74.3, datetime.now(pytz.UTC)
+            
     except Exception as e:
-        raise RuntimeError(f"GPS Error: {e}")
+        print(f"Warning: GPS Error: {e}")
+        print("Using default location and system time")
+        return 40.9, -74.3, datetime.now(pytz.UTC)
 
 def recommend_js8_band(latitude: float, longitude: float, utc_time: datetime) -> tuple[str, float]:
     """Recommend a JS8Call band based on current conditions."""
@@ -162,7 +205,7 @@ def recommend_js8_band(latitude: float, longitude: float, utc_time: datetime) ->
     temperature = None
     weather = None
     
-    if check_internet_connection():
+    if False: #check_internet_connection():
         weather_data = fetch_weather_data(latitude, longitude)
         if weather_data:
             temperature, weather = weather_data
@@ -202,19 +245,23 @@ def switch_js8call_band(band: str, freq: float) -> bool:
 def main():
     try:
         lat, lon, gps_time = get_gps_data()
+        print(f"GPS Time: {gps_time}")
         tz_name = get_timezone_name(lat, lon)
         local_time = gps_time.astimezone(pytz.timezone(tz_name))
         
         print(f"Location: {lat:.4f}°N, {lon:.4f}°E")
-        print(f"Time: {local_time.strftime('%H:%M')} {tz_name}")
+        print(f"Time: {local_time.strftime('%I:%M %p')} {tz_name} (from GPS)")
         
     except RuntimeError as e:
         print("Using default location (NJ)")
         lat = 40.9
         lon = -74.3
+        # Use current UTC time for default location
         gps_time = datetime.now(pytz.UTC)
         tz_name = get_timezone_name(lat, lon)
         local_time = gps_time.astimezone(pytz.timezone(tz_name))
+        print(f"Location: {lat:.4f}°N, {lon:.4f}°E")
+        print(f"Time: {local_time.strftime('%I:%M %p')} {tz_name} (from system time)")
 
     band, freq = recommend_js8_band(lat, lon, gps_time)
     
@@ -256,8 +303,8 @@ def main():
     
     # Explain recommendation rationale
     print("\nRecommendation rationale:")
-    utc_hour = gps_time.hour
-    day = 7 <= utc_hour <= 18
+    local_hour = local_time.hour
+    day = 7 <= local_hour <= 18
     high_lat = abs(lat) > 45
     
     if check_internet_connection():
@@ -274,7 +321,7 @@ def main():
         print("• Night time conditions favor lower frequency bands")
         if high_lat:
             print("• High latitude location requires lower frequencies for reliable communication")
-    elif 10 <= utc_hour <= 16:
+    elif 10 <= local_hour <= 16:
         print("• Mid-day conditions typically support higher frequency bands")
     else:
         print("• Early morning/late afternoon conditions favor mid-range frequencies")
